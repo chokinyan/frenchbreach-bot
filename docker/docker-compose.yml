@@ -1,0 +1,25 @@
+services:
+  frenchbreach-bot:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: frenchbreach-bot
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    env_file:
+      - ../.env
+    environment:
+      MONGO_URL: mongodb://mongo:27017
+    volumes:
+      - ../src/json:/app/src/json
+
+  mongo:
+    image: mongo:7
+    container_name: frenchbreach-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

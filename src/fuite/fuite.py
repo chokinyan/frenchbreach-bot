@@ -1,3 +1,4 @@
+from __future__ import annotations
 import asyncio
 import json
 from datetime import datetime
@@ -5,6 +6,7 @@ from pathlib import Path
 
 import httpx
 from pydantic import ValidationError
+
 
 try:
     from ..types.fuite import ArticlesResponse
@@ -99,7 +101,7 @@ async def read_leak_list() -> ArticlesResponse | None:
     return data
 
 
-async def check_new_leak() -> ArticlesResponse.articles | None:
+async def check_new_leak() -> list[ArticlesResponse] | None:
     if not (json_path.exists()):
         print("Fichier data non existant !")
         return

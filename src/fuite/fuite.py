@@ -17,8 +17,7 @@ except ImportError:
 
 base_url: str = "https://frenchbreaches.com/api/articles_api.php?year="
 json_path: Path = Path(__file__).resolve().parents[1] / "json" / "data.json"
-"""
-{
+"""{
     "articles" : Array<
         {
             "id" : str,
@@ -51,11 +50,10 @@ json_path: Path = Path(__file__).resolve().parents[1] / "json" / "data.json"
     "stats" : {
         "count" : int
     }
-}
-"""
+}"""
 
 
-async def get_liste_fuite(year: int = datetime.now().year) -> ArticlesResponse | None:  # noqa: DTZ005
+async def get_leak(year: int = datetime.now().year) -> ArticlesResponse | None:  # noqa: DTZ005
     url: str = base_url + str(year)
     client = httpx.AsyncClient()
 
@@ -67,32 +65,54 @@ async def get_liste_fuite(year: int = datetime.now().year) -> ArticlesResponse |
         data: ArticlesResponse = ArticlesResponse.model_validate(rep.json())
     except ValidationError as e:
         print(f"erreur lors du parsing des data : {e}")
-        return None
+        return
 
     return data
 
 
-async def write_liste_fuite() -> bool:
-    info: ArticlesResponse | None = await get_liste_fuite()
-    if info is None:
-        return False
+async def write_leak_list(
+    insert_data: ArticlesResponse | None = None,
+) -> ArticlesResponse | None:
+    data: ArticlesResponse | None = insert_data
+    if data is None:
+        data = await get_leak()
+        if data is None:
+            return
     json_path.open("w").close()
-    string_info: str = info.model_dump_json().encode('utf-8')
+    string_info: str = data.model_dump_json().encode("utf-8")
     await asyncio.to_thread(json_path.write_bytes, string_info)
     print("fichier crée avec succès")
-    return True
+    return data
 
 
-async def read_liste_fuite() -> ArticlesResponse | None:
+async def read_leak_list() -> ArticlesResponse | None:
     if not (json_path.exists()):
-        success: bool = await write_liste_fuite()
-        if success is None:
-            return None
+        data: ArticlesResponse | None = await write_leak_list()
+        return data
     try:
         data: ArticlesResponse = ArticlesResponse.model_validate(
             json.loads(json_path.read_text("utf-8"))
         )
     except ValidationError as e:
         print(f"cant read correct data : {e}")
-        return None
+        return
     return data
+
+
+async def check_new_leak() -> ArticlesResponse.articles | None:
+    if not (json_path.exists()):
+        print("Fichier data non existant !")
+        return
+    new_data: ArticlesResponse | None = await get_leak()
+    old_data: ArticlesResponse | None = await read_leak_list()
+    if new_data is None or old_data is None:
+        print("Erreur lors de la récuperation des articles")
+        return
+
+    nb_difference: int = new_data.stats.count - old_data.stats.count
+
+    if nb_difference != 0:
+        await write_leak_list(new_data)
+        return new_data.articles[0 : abs(nb_difference)]
+
+    return

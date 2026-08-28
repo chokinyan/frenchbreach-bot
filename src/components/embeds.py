@@ -1,10 +1,18 @@
+import re
 from datetime import datetime
 
-import re
 import discord
 
+try:
+    from src.types.fuite import ArticlesResponse
+except ImportError:
+    import sys
+    from pathlib import Path
 
-def fuite_embed(
+    sys.path.append(str(Path(__file__).resolve().parents[2]))
+
+
+def leak_embed(
     title: str,
     url: str,
     logo: str,
@@ -13,19 +21,16 @@ def fuite_embed(
     status: str | None = None,
     affected_count: int = 0,
     data_types: list[str] | None = None,
+    footer : str | None = None
 ) -> discord.Embed:
 
     embed = discord.Embed(title=f"{title}", url=url, color=discord.Color(0xFF2C2C))
 
-    print("Le ptn de logo : ", logo)
-
     logo_url: str = f"https://frenchbreaches.com/{re.sub(r'^(\.\./?)+', '', logo)}"
-
-    print(logo_url)
 
     embed.set_thumbnail(url=logo_url)
 
-    if volume != 0:
+    if volume is not None and volume != 0:
         embed.add_field(name="volume", value=f"{volume}Gb", inline=False)
 
     if status is not None:
@@ -41,5 +46,13 @@ def fuite_embed(
     if date is not None:
         leaked_date: datetime = datetime.fromisoformat(date)
         embed.timestamp = leaked_date
+        
+    if footer is not None:
+        embed.set_footer(footer)
 
     return embed
+
+
+class ComplexEmbed(discord.ui.View):
+    def __init__(self, leak_data: ArticlesResponse,):
+        super().__init__(timeout=None)

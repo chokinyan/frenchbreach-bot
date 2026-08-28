@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 from datetime import datetime
 from typing import Optional
 
@@ -8,7 +9,7 @@ from discord.ext import commands
 from pymongo.results import DeleteResult, UpdateResult
 
 try:
-    from ..components.embeds import leak_embed
+    from ..components.embeds import LeakListView, leak_embed
     from ..fuite.fuite import get_leak, read_leak_list
     from ..types.customBot import CustomClient
     from ..types.fuite import ArticlesResponse
@@ -17,7 +18,7 @@ except ImportError:
     from pathlib import Path
 
     sys.path.append(str(Path(__file__).resolve().parents[2]))
-    from src.components.embeds import leak_embed
+    from src.components.embeds import LeakListView, leak_embed
     from src.fuite.fuite import get_leak, read_leak_list
     from src.types.customBot import CustomClient
     from src.types.fuite import ArticlesResponse
@@ -36,7 +37,7 @@ class Fuite(commands.Cog):
 
             if data is None or not data.articles:
                 await interaction.edit_original_response(
-                    content="Une erreur est survenu !"
+                    content="😓 Une erreur est survenue !"
                 )
                 await asyncio.sleep(5)
                 await interaction.delete_original_response()
@@ -44,7 +45,7 @@ class Fuite(commands.Cog):
 
             first_leak = data.articles[0]
 
-            embed = leak_embed(
+            embed: discord.Embed = leak_embed(
                 title=first_leak.title,
                 url=first_leak.shortUrl,
                 logo=first_leak.logo,
@@ -53,15 +54,16 @@ class Fuite(commands.Cog):
                 status=first_leak.breachStatus,
                 affected_count=first_leak.affectedCount,
                 data_types=first_leak.dataTypes,
+                description=first_leak.description,
             )
 
-            await interaction.edit_original_response(content="", embed=embed)
+            await interaction.edit_original_response(content=None, embed=embed)
 
-        except Exception as e:  # noqa: BLE001
-            import traceback
-
+        except Exception:  # noqa: BLE001
             traceback.print_exc()
-            await interaction.edit_original_response(content=f"Erreur: {e}")
+            await interaction.edit_original_response(
+                content="😓 Une erreur est survenue !"
+            )
 
     @app_commands.command(
         name="setupchannel", description="Setup your new leak channel"
@@ -83,10 +85,10 @@ class Fuite(commands.Cog):
         if result.acknowledged and (
             result.modified_count > 0 or result.upserted_id is not None
         ):
-            await interaction.edit_original_response(content="✅ ajout reussis !")
+            await interaction.edit_original_response(content="✅ Ajout réussi !")
         else:
             await interaction.edit_original_response(
-                content="😓 une erreur c'est produite"
+                content="😓 Une erreur s'est produite"
             )
 
     @app_commands.command(name="unlinkchannel", description="Unlink your leak channel")
@@ -101,52 +103,66 @@ class Fuite(commands.Cog):
         )
 
         if result.acknowledged and result.deleted_count > 0:
-            await interaction.edit_original_response(content="✅ suppression reussis !")
+            await interaction.edit_original_response(content="✅ Suppression réussie !")
         else:
             await interaction.edit_original_response(
-                content="😓 une erreur c'est produite"
+                content="😓 Une erreur s'est produite"
             )
 
     @app_commands.command(
-        name="leaks", description="Get All leaks happend in a year (default this year)"
+        name="leaks",
+        description="Get all leaks that happened in a year (default: this year)",
     )
     async def all_leaks(
         self,
         interaction: discord.Interaction,
         year: Optional[int] = None,  # noqa: UP045
     ) -> None:
+        if year is None:
+            year = datetime.now().year  # noqa: DTZ005
 
         if year >= 9999:
-            await interaction.response.send_message(content="ABUSE MEC !")
+            await interaction.response.send_message(
+                content=f"Année invalide : {year}"
+            )
             return
 
-        current_year: int = datetime.now().year  # noqa: DTZ005
-
-        if year > current_year or year < 2016:
+        if year < 2016:
             await interaction.response.send_message(
                 content=f"Aucune fuite disponible pour l'année : {year}"
             )
             return
 
-        await interaction.response.send_message(content="Veuillez patientier ...")
-        if year is None or year == current_year:
-            data: ArticlesResponse | None = await read_leak_list()
-            return
+        await interaction.response.send_message(content="Veuillez patienter ...")
 
-        data: ArticlesResponse | None = await get_leak(year=year)
-        if data is None:
-            await interaction.edit_original_response("😓 Une erreur est survenu !")
-            await asyncio.wait(5)
-            await interaction.delete_original_response()
-            return
+        try:
+            data: ArticlesResponse | None = await get_leak(year=year)
 
-        if data.stats.count == 0:
+            if data is None:
+                await interaction.edit_original_response(
+                    content="😓 Une erreur est survenue !"
+                )
+                await asyncio.sleep(5)
+                await interaction.delete_original_response()
+                return
+
+            if data.stats.count == 0:
+                await interaction.edit_original_response(
+                    content=f"Aucune fuite trouvée pour l'année : {year}"
+                )
+                return
+
+            viewer: LeakListView = LeakListView(leak_data=data)
+            embed = viewer.set_embed()
+
             await interaction.edit_original_response(
-                f"Aucune fuite trouvé pour l'année : {year}"
+                content=None, embed=embed, view=viewer
             )
-            return
-            
-        
+        except Exception:  # noqa: BLE001
+            traceback.print_exc()
+            await interaction.edit_original_response(
+                content="😓 Une erreur est survenue !"
+            )
 
 
 async def setup(client: CustomClient) -> None:

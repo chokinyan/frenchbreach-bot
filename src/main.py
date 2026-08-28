@@ -38,7 +38,6 @@ async def send_new_leak(client: CustomClient) -> None:
     print("new check with leaks")
 
     for information in guilds_channels:
-        print(information)
         channel_id = information["channel_id"]
         guild_id = information["guild_id"]
 
@@ -96,7 +95,7 @@ async def main() -> None:
 
     setup_event_handlers.setup_handlers(client)
 
-    SetInterval(10, send_new_leak, client, event_loop=asyncio.get_running_loop())
+    SetInterval(60*30, send_new_leak, client, event_loop=asyncio.get_running_loop())
 
     await cogs.load_extensions(client)
     await fuite_processor.write_leak_list()

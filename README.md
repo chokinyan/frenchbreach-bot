@@ -1,6 +1,6 @@
 # FrenchBreaches Bot
 
-Merci beaucoup a [Loukas1212](https://github.com/loukas1212) pour l'aide pour son aide précieuse.
+Merci beaucoup à [Loukas1212](https://github.com/loukas1212) pour son aide précieuse.
 
 Bot Discord qui surveille [FrenchBreaches](https://frenchbreaches.com) et affiche les dernières fuites de données directement dans votre serveur.
 
@@ -17,7 +17,7 @@ Bot Discord qui surveille [FrenchBreaches](https://frenchbreaches.com) et affich
 
 ## Prérequis
 
-- Python 3.11+
+- Python 3.13+
 - Un token de bot Discord ([Discord Developer Portal](https://discord.com/developers/applications))
 - Une base de données MongoDB (ex: [MongoDB Atlas](https://www.mongodb.com/atlas)) pour stocker la configuration des salons par serveur
 
@@ -47,6 +47,31 @@ python src/main.py
 ```
 
 Une configuration de lancement VS Code (`.vscode/launch.json`) est déjà fournie ("Run bot").
+
+## Installation (via Docker)
+
+1. Copiez `.env.docker.example` en `.env` et renseignez le token du bot (ne touchez pas aux autres paramètres) :
+
+```bash
+TOKEN=your_bot_token
+MONGO_URL=mongodb://mongo:27017
+MONGO_DB=frenchbreach
+MONGO_COLLECTION=guilds
+```
+
+2. Build l'image Docker :
+
+Merci de lancer cette commande **depuis la racine du projet** :
+
+```bash
+docker build -t frenchbreach-bot -f docker/Dockerfile .
+```
+
+3. Lancer le conteneur du bot et de la base de données :
+
+```bash
+cd docker && docker compose up
+```
 
 ## Structure du projet
 

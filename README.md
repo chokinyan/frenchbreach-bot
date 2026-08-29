@@ -12,7 +12,7 @@ Bot Discord qui surveille [FrenchBreaches](https://frenchbreaches.com) et affich
 - `/leaks` — récupère les fuites d'une année donnée (par défaut l'année en cours).
 - Vérification automatique des nouvelles fuites toutes les 10 secondes, avec envoi dans le salon configuré de chaque serveur.
 - Configuration multi-serveurs stockée dans MongoDB (association serveur ↔ salon de notification).
-- Récupération automatique de la liste des fuites au démarrage du bot, mise en cache dans `src/json/data.json`.
+- Récupération automatique de la liste des fuites au démarrage du bot, mise en cache dans `src/cache/cache.db`.
 - Chargement automatique des cogs présents dans `src/cogs/`.
 
 ## Prérequis
@@ -78,12 +78,12 @@ cd docker && docker compose up
 ```
 src/
 ├── main.py              # Point d'entrée du bot (connexion Discord + MongoDB, vérification périodique)
+├── cache/               # Cache local des données (ignoré par git)
 ├── cogs/                # Commandes slash (ex: fuite.py -> /lastleak, /setupchannel, /unlinkchannel, /leaks)
 ├── components/          # Utilitaires (embeds, chargement des cogs, intervalles)
-├── handlers/             # Événements du client Discord (on_ready, on_error)
-├── fuite/                # Récupération et cache des données FrenchBreaches
-├── types/                # Modèles Pydantic (réponses de l'API, client Discord custom, modèle MongoDB)
-└── json/                 # Cache local des données (ignoré par git)
+├── handlers/            # Événements du client Discord (on_ready, on_error)
+├── fuite/               # Récupération et cache des données FrenchBreaches
+└── types/               # Modèles Pydantic (réponses de l'API, client Discord custom, modèle MongoDB)
 ```
 
 ## Configuration

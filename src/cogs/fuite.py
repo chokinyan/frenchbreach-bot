@@ -109,60 +109,65 @@ class Fuite(commands.Cog):
                 content="😓 Une erreur s'est produite"
             )
 
-    @app_commands.command(
-        name="leaks",
-        description="Get all leaks that happened in a year (default: this year)",
+@app_commands.command(
+    name="leaks",
+    description="Get all leaks that happened in a year (default: this year)",
+)
+async def all_leaks(
+    self,
+    interaction: discord.Interaction,
+    year: Optional[int] = None,  # noqa: UP045
+) -> None:
+    if year is None:
+        year = datetime.now().year  # noqa: DTZ005
+
+    if year >= 9999:
+        await interaction.response.send_message(
+            content=f"Année invalide : {year}",
+            ephemeral=True,
+        )
+        return
+
+    if year < 2016:
+        await interaction.response.send_message(
+            content=f"Aucune fuite disponible pour l'année : {year}",
+            ephemeral=True,
+        )
+        return
+
+    await interaction.response.send_message(
+        content="Veuillez patienter ...",
+        ephemeral=True,
     )
-    async def all_leaks(
-        self,
-        interaction: discord.Interaction,
-        year: Optional[int] = None,  # noqa: UP045
-    ) -> None:
-        if year is None:
-            year = datetime.now().year  # noqa: DTZ005
 
-        if year >= 9999:
-            await interaction.response.send_message(
-                content=f"Année invalide : {year}"
-            )
-            return
+    try:
+        data: ArticlesResponse | None = await get_leak(year=year)
 
-        if year < 2016:
-            await interaction.response.send_message(
-                content=f"Aucune fuite disponible pour l'année : {year}"
-            )
-            return
-
-        await interaction.response.send_message(content="Veuillez patienter ...")
-
-        try:
-            data: ArticlesResponse | None = await get_leak(year=year)
-
-            if data is None:
-                await interaction.edit_original_response(
-                    content="😓 Une erreur est survenue !"
-                )
-                await asyncio.sleep(5)
-                await interaction.delete_original_response()
-                return
-
-            if data.stats.count == 0:
-                await interaction.edit_original_response(
-                    content=f"Aucune fuite trouvée pour l'année : {year}"
-                )
-                return
-
-            viewer: LeakListView = LeakListView(leak_data=data)
-            embed = viewer.set_embed()
-
-            await interaction.edit_original_response(
-                content=None, embed=embed, view=viewer
-            )
-        except Exception:  # noqa: BLE001
-            traceback.print_exc()
+        if data is None:
             await interaction.edit_original_response(
                 content="😓 Une erreur est survenue !"
             )
+            await asyncio.sleep(5)
+            await interaction.delete_original_response()
+            return
+
+        if data.stats.count == 0:
+            await interaction.edit_original_response(
+                content=f"Aucune fuite trouvée pour l'année : {year}"
+            )
+            return
+
+        viewer: LeakListView = LeakListView(leak_data=data)
+        embed = viewer.set_embed()
+
+        await interaction.edit_original_response(
+            content=None, embed=embed, view=viewer
+        )
+    except Exception:  # noqa: BLE001
+        traceback.print_exc()
+        await interaction.edit_original_response(
+            content="😓 Une erreur est survenue !"
+        )
 
 
 async def setup(client: CustomClient) -> None:

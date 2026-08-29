@@ -80,10 +80,11 @@ src/
 ├── main.py              # Point d'entrée du bot (connexion Discord + MongoDB, vérification périodique)
 ├── cogs/                # Commandes slash (ex: fuite.py -> /lastleak, /setupchannel, /unlinkchannel, /leaks)
 ├── components/          # Utilitaires (embeds, chargement des cogs, intervalles)
-├── handlers/             # Événements du client Discord (on_ready, on_error)
-├── fuite/                # Récupération et cache des données FrenchBreaches
-├── types/                # Modèles Pydantic (réponses de l'API, client Discord custom, modèle MongoDB)
-└── json/                 # Cache local des données (ignoré par git)
+├── handlers/            # Événements du client Discord (on_ready, on_error)
+├── fuite/               # Récupération et cache des données FrenchBreaches
+├── types/               # Modèles Pydantic (réponses de l'API, client Discord custom, modèle MongoDB)
+└── json/                # Cache local des données (ignoré par git)
+docker/                  # Image docker et docker-compose.yml pour le bot et la DB
 ```
 
 ## Configuration

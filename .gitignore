@@ -4,6 +4,6 @@
 
 **/__pycache__/
 
-src/json/data.json
+src/cache/cache.db
 
 /embed_pour_choki

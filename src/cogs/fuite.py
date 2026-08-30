@@ -10,7 +10,7 @@ from pymongo.results import DeleteResult, UpdateResult
 
 try:
     from ..components.embeds import LeakListView, leak_embed
-    from ..fuite.fuite import get_leak, read_leak_list
+    from ..fuite.fuite import read_leak_list
     from ..types.customBot import CustomClient
     from ..types.fuite import ArticlesResponse
 except ImportError:
@@ -19,7 +19,7 @@ except ImportError:
 
     sys.path.append(str(Path(__file__).resolve().parents[2]))
     from src.components.embeds import LeakListView, leak_embed
-    from src.fuite.fuite import get_leak, read_leak_list
+    from src.fuite.fuite import read_leak_list
     from src.types.customBot import CustomClient
     from src.types.fuite import ArticlesResponse
 
@@ -70,7 +70,7 @@ class Fuite(commands.Cog):
     )
     @app_commands.checks.has_permissions(administrator=True)
     async def setup_channel_leak(
-        self, interaction: discord.Interaction, channel: discord.TextChannel
+            self, interaction: discord.Interaction, channel: discord.TextChannel
     ) -> None:
         await interaction.response.send_message(
             content="Ajout en cours veuillez patienter", ephemeral=True
@@ -83,7 +83,7 @@ class Fuite(commands.Cog):
         )
 
         if result.acknowledged and (
-            result.modified_count > 0 or result.upserted_id is not None
+                result.modified_count > 0 or result.upserted_id is not None
         ):
             await interaction.edit_original_response(content="✅ Ajout réussi !")
         else:
@@ -114,9 +114,9 @@ class Fuite(commands.Cog):
         description="Get all leaks that happened in a year (default: this year)",
     )
     async def all_leaks(
-        self,
-        interaction: discord.Interaction,
-        year: Optional[int] = None,  # noqa: UP045
+            self,
+            interaction: discord.Interaction,
+            year: Optional[int] = None,  # noqa: UP045
     ) -> None:
         if year is None:
             year = datetime.now().year  # noqa: DTZ005
@@ -136,7 +136,7 @@ class Fuite(commands.Cog):
         await interaction.response.send_message(content="Veuillez patienter ...")
 
         try:
-            data: ArticlesResponse | None = await get_leak(year=year)
+            data: ArticlesResponse | None = await read_leak_list(year=year)
 
             if data is None:
                 await interaction.edit_original_response(

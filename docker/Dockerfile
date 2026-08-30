@@ -11,7 +11,7 @@ WORKDIR /app
 
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential tzdata \
+    && apt-get install -y --no-install-recommends build-essential tzdata gosu \
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
@@ -19,7 +19,6 @@ RUN apt-get update \
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
 
 COPY src/ ./src/
 
@@ -29,6 +28,10 @@ RUN mkdir -p /app/src/json
 
 RUN useradd --create-home --shell /bin/bash appuser \
     && chown -R appuser:appuser /app
-USER appuser
 
+
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "src/main.py"]

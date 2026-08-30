@@ -84,6 +84,7 @@ src/
 ├── handlers/            # Événements du client Discord (on_ready, on_error)
 ├── fuite/               # Récupération et cache des données FrenchBreaches
 └── types/               # Modèles Pydantic (réponses de l'API, client Discord custom, modèle MongoDB)
+docker/                  # Image docker et docker-compose.yml pour le bot et la DB
 ```
 
 ## Configuration

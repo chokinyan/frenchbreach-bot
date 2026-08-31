@@ -13,5 +13,5 @@ COGS_DIR: Path = Path(__file__).resolve().parents[1] / "cogs"
 
 async def load_extensions(client: CustomClient) -> None:
     for path in COGS_DIR.iterdir():
-        if path.suffix == ".py":
+        if path.suffix == ".py" and not path.stem.startswith("_"):
             await client.load_extension(f"cogs.{path.stem}")

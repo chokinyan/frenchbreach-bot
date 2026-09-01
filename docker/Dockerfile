@@ -23,7 +23,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ ./src/
 
 
-RUN mkdir -p /app/src/json
+RUN mkdir -p /app/src/cache
 
 
 RUN useradd --create-home --shell /bin/bash appuser \

@@ -1,5 +1,5 @@
 import discord
-
+import re
 try:
     from ..leak.api import (
         FrenchBreachesClient,

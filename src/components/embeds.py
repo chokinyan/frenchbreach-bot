@@ -1,5 +1,5 @@
 import discord
-
+import re
 try:
     from ..leak.api import (
         FrenchBreachesClient,
@@ -35,7 +35,7 @@ def _safe_url(value: str | None) -> str | None:
     """Ne garde une URL que si Discord l'acceptera. Une URL malformée ou un
     chemin relatif dans `url` / `set_image` / `set_thumbnail` fait rejeter
     TOUT l'embed en HTTP 400 — on préfère un embed sans image qu'un échec."""
-    if value and value.startswith(("http://", "https://")):
+    if value and re.match(r"^https?://(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$", value):
         return value
     return None
 
